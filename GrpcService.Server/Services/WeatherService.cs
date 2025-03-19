@@ -40,6 +40,8 @@ public class WeatherService : Server.WeatherService.WeatherServiceBase
             Temperature = temperatures!.Main.Temp,
             FeelsLike = temperatures.Main.FeelsLike,
             Timestamp = Timestamp.FromDateTime(DateTime.UtcNow),
+            City = request.City,
+            Units = request.Units,
         };
     }
 
@@ -64,9 +66,36 @@ public class WeatherService : Server.WeatherService.WeatherServiceBase
                     Temperature = temperatures!.Main.Temp,
                     FeelsLike = temperatures.Main.FeelsLike,
                     Timestamp = Timestamp.FromDateTime(DateTime.UtcNow),
+                    City = request.City,
+                    Units = request.Units,
                 }
             );
             await Task.Delay(1000);
         }
+    }
+
+    public override async Task<MultiWeatherResponse> GetMultiCurrentWeatherStream(
+        IAsyncStreamReader<GetCurrentWeatherForCityRequest> requestStream,
+        ServerCallContext context
+    )
+    {
+        var httpClient = _httpClientFactory.CreateClient();
+        var response = new MultiWeatherResponse { Weather = { } };
+
+        await foreach (var request in requestStream.ReadAllAsync())
+        {
+            var temperatures = await GetCurrentTemperaturesAsync(request, httpClient);
+            response.Weather.Add(
+                new WeatherResponse
+                {
+                    Temperature = temperatures!.Main.Temp,
+                    FeelsLike = temperatures.Main.FeelsLike,
+                    Timestamp = Timestamp.FromDateTime(DateTime.UtcNow),
+                    City = request.City,
+                    Units = request.Units,
+                }
+            );
+        }
+        return response;
     }
 }
