@@ -8,19 +8,18 @@ namespace GrpcService.Server.Services;
 public class WeatherService : Server.WeatherService.WeatherServiceBase
 {
     private readonly ILogger<WeatherService> _logger;
-
-    //
-    // public WeatherService(ILogger<WeatherService> logger)
-    // {
-    //     _logger = logger;
-    // }
-
-    //     public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
-    //     {
-    //         return Task.FromResult(new HelloReply { Message = "Server: Hello " + request.Name });
-    //     }
-
     private readonly IHttpClientFactory _httpClientFactory;
+
+    private static async Task<Temperatures> GetCurrentTemperaturesAsync(
+        GetCurrentWeatherForCityRequest request,
+        HttpClient httpClient
+    )
+    {
+        var responseText = await httpClient.GetStringAsync(
+            $"https://api.openweathermap.org/data/2.5/weather?q={request.City}&APPID=98d06264d6aaf62941254419334e88dd&units={request.Units}"
+        );
+        return JsonSerializer.Deserialize<Temperatures>(responseText);
+    }
 
     public WeatherService(IHttpClientFactory httpClientFactory, ILogger<WeatherService> logger)
     {
@@ -69,16 +68,5 @@ public class WeatherService : Server.WeatherService.WeatherServiceBase
             );
             await Task.Delay(1000);
         }
-    }
-
-    private static async Task<Temperatures> GetCurrentTemperaturesAsync(
-        GetCurrentWeatherForCityRequest request,
-        HttpClient httpClient
-    )
-    {
-        var responseText = await httpClient.GetStringAsync(
-            $"https://api.openweathermap.org/data/2.5/weather?q={request.City}&APPID=98d06264d6aaf62941254419334e88dd&units={request.Units}"
-        );
-        return JsonSerializer.Deserialize<Temperatures>(responseText);
     }
 }
