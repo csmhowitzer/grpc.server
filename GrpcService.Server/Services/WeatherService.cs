@@ -98,4 +98,16 @@ public class WeatherService : Server.WeatherService.WeatherServiceBase
         }
         return response;
     }
+
+    public override async Task<Empty> PrintStream(
+        IAsyncStreamReader<PrintRequest> requestStream,
+        ServerCallContext context
+    )
+    {
+        await foreach (var request in requestStream.ReadAllAsync())
+        {
+            _logger.LogInformation($"Client said: {request.Message}");
+        }
+        return new();
+    }
 }
