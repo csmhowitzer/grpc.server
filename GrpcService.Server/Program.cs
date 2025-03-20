@@ -1,3 +1,5 @@
+using GrpcService.Server.Services;
+
 namespace GrpcService.Server;
 
 public class Program
@@ -15,6 +17,7 @@ public class Program
         // Configure the HTTP request pipeline.
         //app.MapGrpcService<GreeterService>();
         app.MapGrpcService<GrpcService.Server.Services.WeatherService>();
+        app.MapGrpcService<ChatService>();
         app.MapGet(
             "/",
             () =>
